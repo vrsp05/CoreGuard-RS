@@ -3,17 +3,25 @@
 /* Importing all the needed libraries of this program. */
 use std::io;
 
-/* Creating all the needed structs of this program. */
+/* Creating all the needed structs and enums of this program. */
 
 // Creating our struct to represent the reactor's and its properties.
 struct Reactor {
 
     // The unique identifier of the reactor.
     reactor_id: u32,
-    // The current status of the reactor, which can be "Online", "Offline", or "Meltdown", etc.
-    reactor_status: String,
+    // The current status of the reactor, which can be "Stable", "Warning", or "Critical".
+    reactor_status: ReactorStatus,
 
 } // End of the Reactor struct definition.
+
+// Creating an enum to represent the different status of a reactor.
+#[derive(Debug, PartialEq)]
+enum ReactorStatus {
+    Stable,
+    Warning,
+    Critical,
+} // End of the ReactorStatus enum definition.
 
 // The main function of the program.
 fn main() {
@@ -24,7 +32,7 @@ fn main() {
     // Creating the first reactor and adding it to the registry.
     let reactor_1 = Reactor {
         reactor_id: 101,
-        reactor_status: String::from("Stable"),
+        reactor_status: ReactorStatus::Stable,
     };
 
     // Adding the first reactor to the plant registry.
@@ -32,12 +40,21 @@ fn main() {
 
     // Looping through the plant registry and printing the details of each reactor.
     for reactor in &plant_registry {
-        println!("Reactor ID: {}, Status: {}", reactor.reactor_id, reactor.reactor_status);
+        println!("Reactor ID: {}, Status: {}", reactor.reactor_id, get_safety_status(&reactor.reactor_status));
     } // End of the loop/
+
+    // Calling the find_reactor function to find a reactor with ID 101 and handling the result.
+    match find_reactor(&plant_registry, 101)
+    {   
+        // If the reactor is found, print its details.
+        Ok(reactor) => println!("Reactor found: ID {}, Status: {}", reactor.reactor_id, get_safety_status(&reactor.reactor_status)),
+        Err(e) => println!("Search failed. System Status: {}", get_safety_status(&e)),
+    }
 
 } // End of the main function.
 
-fn find_reactor(plant_registry: &Vec<Reactor>, reactor_id: u32) -> Result<&Reactor, String>
+// Function to find a reactor in the plant registry by its ID.
+fn find_reactor(plant_registry: &Vec<Reactor>, reactor_id: u32) -> Result<&Reactor, ReactorStatus>
 {   
     // Loop through the plant registry to find the reactor with the specified ID.
     for reactor in plant_registry
@@ -50,9 +67,20 @@ fn find_reactor(plant_registry: &Vec<Reactor>, reactor_id: u32) -> Result<&React
     } // End of the loop.
 
     // If the reactor is not found, return an error message.
-    Err(String::from("Reactor not found"))
+    Err(ReactorStatus::Critical)
 
 } // End of the find_reactor function definition.
+
+// Fucntion that matches the ReactorStatus enum to print the status as a string.
+fn get_safety_status(status: &ReactorStatus) -> &str
+{
+    match status
+    {
+        ReactorStatus::Stable => "Stable",
+        ReactorStatus::Warning => "Warning",
+        ReactorStatus::Critical => "Critical",
+    }
+} // End of the get_safety_status function definition.
 
 // The test module for the program.
 #[cfg(test)]
@@ -68,13 +96,13 @@ mod tests {
         let mut plant_registry = Vec::new();
 
         // Creating a new reactor.
-        let reacctor_1 = Reactor {
+        let reactor_1 = Reactor {
             reactor_id: 101,
-            reactor_status: String::from("Stable"),
+            reactor_status: ReactorStatus::Stable,
         };
 
         // Adding the reactor to the plant registry.
-        plant_registry.push(reacctor_1);
+        plant_registry.push(reactor_1);
 
         // Testing the find_reactor function to find the reactor with ID 101.
         let result = find_reactor(&plant_registry, 101);
