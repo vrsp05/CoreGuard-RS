@@ -102,16 +102,26 @@ fn main() {
                 io::stdin().read_line(&mut new_id).expect("Failed to read input");
                 
                 // Parsing the new reactor ID input and handling invalid input.
-                let new_id: u32 = new_id.trim().parse().expect("Failed to parse ID");
+                if let Ok(new_id) = new_id.trim().parse::<u32>()
+                {
+                        // Here we call our new function and match on the result!
+                        match add_reactor(&mut all_plants_registry, new_id)
+                        {   
+                            // If the reactor was added successfully, print a success message.
+                            Ok(_) => println!("Reactor {} added successfully.", new_id),
+
+                            Err(e) => println!("{}", e), // This prints our duplicate ID error.
+
+                        } // End of the match statement for adding a new reactor.
+
+                } // If the input is invalid, print an error message. 
                 
-                // Creating a new Reactor instance with the provided ID and a default status of "Stable".
-                let new_reactor = Reactor {
-                    reactor_id: new_id,
-                    reactor_status: ReactorStatus::Stable,
-                }; // End of the new reactor creation.
-                
-                // Adding the new reactor to the plant registry.
-                all_plants_registry.push(new_reactor);
+                // If the input is invalid, print an error message.
+                else
+                {
+                        println!("Invalid ID. Please enter a positive integer.");
+
+                } // End of the if statement for parsing new reactor ID input.
 
             } // End of the case for adding a new reactor.
 
@@ -300,6 +310,7 @@ mod test_2 {
     // Importing all the needed libraries for testing.
     use super::*;
 
+    // Test 5: Test adding a reactor with a duplicate ID and ensuring it returns an error.
     #[test]
     fn find_test_find_reactor()
     {   
@@ -325,6 +336,7 @@ mod test_2 {
     
     } // End of the find_test_find_reactor test function definition.
 
+    // Test 6: Test adding a reactor with a duplicate ID and ensuring it returns an error.
     #[test]
     fn test_add_reactor_duplicate() {
         let mut registry = Vec::new();
