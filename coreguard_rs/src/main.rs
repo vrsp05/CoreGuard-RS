@@ -186,6 +186,30 @@ fn main() {
 // FUNCTIONS DEFINITIONS
 
 
+// Function to help add a new reactor to the plant registry.
+fn add_reactor(plant_registry: &mut Vec<Reactor>, new_id: u32) -> Result<(), String>
+{
+    // Check if the reactor ID aleady exists in the plant registry.
+    if plant_registry.iter().any(|r| r.reactor_id == new_id) {
+        
+        // If the reactor ID already exists, return an error message.
+        return Err(format!("Reactor with ID {} already exists.", new_id));
+
+    } // End of the if
+
+    // If unique, create and push the new reactor.
+    let new_reactor = Reactor {
+        reactor_id: new_id,
+        reactor_status: ReactorStatus::Stable,
+    };
+    plant_registry.push(new_reactor);
+
+    // Return Ok if the reactor was added successfully.
+    Ok(())
+
+} // End of the add_reactor function definition.
+
+
 // Function to find a reactor in the plant registry by its ID and delete it if found.
 fn find_reactor(plant_registry: &Vec<Reactor>, reactor_id: u32) -> 
 Result<&Reactor, ReactorStatus>
@@ -300,5 +324,28 @@ mod test_2 {
 
     
     } // End of the find_test_find_reactor test function definition.
+
+    #[test]
+    fn test_add_reactor_duplicate() {
+        let mut registry = Vec::new();
+        let id = 707;
+
+        // First addition should succeed
+        let first_add = add_reactor(&mut registry, id);
+        assert!(first_add.is_ok());
+        assert_eq!(registry.len(), 1);
+
+        // Second addition of the same ID should fail
+        let second_add = add_reactor(&mut registry, id);
+        assert!(second_add.is_err());
+        
+        // Ensure the error message is what we expect
+        if let Err(e) = second_add {
+            assert!(e.contains("already exists"));
+        }
+
+        // Registry size should still be 1
+        assert_eq!(registry.len(), 1);
+    }
 
 } // End of the tests module.
